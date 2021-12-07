@@ -19,9 +19,11 @@ namespace FinalProject
         Rectangle spriteRect;
         Vector2 spriteOrg;
 
+        private double coolDown;
         private double timer;
-
-        private double x, y;
+        private double topSpeed;
+        private double x = 600;
+        private double y = 500;
         private double imgAngle, moveAngle;
         private double speed;
         private double dx, dy;
@@ -65,12 +67,18 @@ namespace FinalProject
             base.Update(gameTime);
 
             //Rectangle spriteRect = new Rectangle((int)x, (int)y, circleSprite.Width, circleSprite.Height );
-            timer += gameTime.ElapsedGameTime.TotalMilliseconds;
+            coolDown += gameTime.ElapsedGameTime.TotalMilliseconds;
+            timer += gameTime.ElapsedGameTime.TotalSeconds;
+            timer = Math.Round(timer, 2);
 
             checkKeys();
             move();
             calcSpeedAngle();
             applyFriction();
+            if(checkBounds())
+            {
+                reset();
+            }
         }
 
         protected override void Draw(GameTime gameTime)
@@ -80,7 +88,8 @@ namespace FinalProject
             _spriteBatch.Begin();
             //_spriteBatch.Draw(circleSprite, new Vector2((float)x, (float)y), Color.White);
             _spriteBatch.Draw(circleSprite, new Vector2((float)x, (float)y), null, Color.White, (float)moveAngle, spriteOrg, 1f, SpriteEffects.None, 0);
-            _spriteBatch.DrawString(text, speed.ToString(), new Vector2(0, 0), Color.Black);
+            _spriteBatch.DrawString(text, "Top Speed:" + topSpeed.ToString(), new Vector2(0, 0), Color.Black);
+            _spriteBatch.DrawString(text, "Time:" + timer.ToString(), new Vector2(0, 50), Color.Black);
             _spriteBatch.End();
 
             base.Draw(gameTime);
@@ -90,10 +99,10 @@ namespace FinalProject
         {
             if (Keyboard.GetState().IsKeyDown(Keys.Right))
             {
-                if(Keyboard.GetState().IsKeyDown(Keys.LeftShift) && timer > 750)
+                if(Keyboard.GetState().IsKeyDown(Keys.LeftShift) && coolDown > 750)
                 {
                     dx += 60;
-                    timer = 0;
+                    coolDown = 0;
                 }
                 else
                 {
@@ -103,10 +112,10 @@ namespace FinalProject
             }
             if (Keyboard.GetState().IsKeyDown(Keys.Left))
             {
-                if (Keyboard.GetState().IsKeyDown(Keys.LeftShift) && timer > 750)
+                if (Keyboard.GetState().IsKeyDown(Keys.LeftShift) && coolDown > 750)
                 {
                     dx -= 60;
-                    timer = 0;
+                    coolDown = 0;
                 }
                 else
                 {
@@ -115,10 +124,10 @@ namespace FinalProject
             }
             if (Keyboard.GetState().IsKeyDown(Keys.Up))
             {
-                if (Keyboard.GetState().IsKeyDown(Keys.LeftShift) && timer > 750)
+                if (Keyboard.GetState().IsKeyDown(Keys.LeftShift) && coolDown > 750)
                 {
                     dy -= 60;
-                    timer = 0;
+                    coolDown = 0;
                 }
                 else
                 {
@@ -127,10 +136,10 @@ namespace FinalProject
             }
             if (Keyboard.GetState().IsKeyDown(Keys.Down))
             {
-                if (Keyboard.GetState().IsKeyDown(Keys.LeftShift) && timer > 750)
+                if (Keyboard.GetState().IsKeyDown(Keys.LeftShift) && coolDown > 750)
                 {
                     dy += 60;
-                    timer = 0;
+                    coolDown = 0;
                 }
                 else
                 {
@@ -142,25 +151,31 @@ namespace FinalProject
         public void move()
         {
             x += dx;
+
+            y += dy;
+            
+        }
+
+        public Boolean checkBounds()
+        {
             if (x > width)
             {
-                x = 0;
+                return (true);
             }
             if (x < 0)
             {
-                x = width;
+                return (true);
             }
 
-            y += dy;
             if (y > height)
             {
-                y = 0;
+                return (true);
             }
             if (y < 0)
             {
-                y = height;
+                return (true);
             }
-
+            return (false);
         }
 
         public void applyFriction()
@@ -193,7 +208,26 @@ namespace FinalProject
             }
             */
             speed = speed * friction;
+            if(Math.Floor(speed) == 0)
+            {
+                speed = 0;
+            }
+            if(speed > topSpeed)
+            {
+                topSpeed = speed;
+            }
             calcVector();
+        }
+
+        public void reset()
+        {
+            x = 600;
+            y = 500;
+            dx = 0;
+            dy = 0;
+            speed = 0;
+            topSpeed = 0;
+            timer = 0;
         }
 
         public void setX(double newX)
@@ -223,7 +257,7 @@ namespace FinalProject
             imgAngle = Math.Atan2(dy, dx);
         }
 
-        /*
+        
         public void setSpeed(double speed)
         {
             this.speed = speed;
@@ -281,6 +315,6 @@ namespace FinalProject
             changeImgAngle(degrees);
             changeMoveAngle(degrees);
         }
-        */
+        
     }
 }
