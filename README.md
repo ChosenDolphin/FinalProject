@@ -1,1 +1,0 @@
-Disaster strikes once again.
